@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .prediction-result {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .prediction-positive {
+            background-color: #ffdddd;
+            color: #ff0000;
+        }
+        .prediction-negative {
+            background-color: #ddffdd;
+            color: #008000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Heart Disease Prediction</h1>
+        <form id="predictionForm" action="{{ url_for('main.prediction') }}" method="POST">
+            <div class="form-group">
+                <label for="input1">Age (years)</label>
+                <input type="number" id="input1" name="input1" min="18" max="100" required>
+            </div>
+
+            <div class="form-group">
+                <label for="input2">Sex</label>
+                <select id="input2" name="input2" required>
+                    <option value="">Select Sex</option>
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input3">Chest Pain Type</label>
+                <select id="input3" name="input3" required>
+                    <option value="">Select Chest Pain Type</option>
+                    <option value="0">Typical Angina</option>
+                    <option value="1">Atypical Angina</option>
+                    <option value="2">Non-Anginal Pain</option>
+                    <option value="3">Asymptomatic</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input4">Resting Blood Pressure (mm Hg)</label>
+                <input type="number" id="input4" name="input4" min="50" max="250" required>
+            </div>
+
+            <div class="form-group">
+                <label for="input5">Cholesterol (mg/dL)</label>
+                <input type="number" id="input5" name="input5" min="100" max="600" required>
+            </div>
+
+            <div class="form-group">
+                <label for="input6">Fasting Blood Sugar > 120 mg/dL</label>
+                <select id="input6" name="input6" required>
+                    <option value="">Select Option</option>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input7">Resting ECG Results</label>
+                <select id="input7" name="input7" required>
+                    <option value="">Select ECG Result</option>
+                    <option value="0">Normal</option>
+                    <option value="1">ST-T Wave Abnormality</option>
+                    <option value="2">Left Ventricular Hypertrophy</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input8">Max Heart Rate Achieved</label>
+                <input type="number" id="input8" name="input8" min="60" max="220" required>
+            </div>
+
+            <div class="form-group">
+                <label for="input9">Exercise Induced Angina</label>
+                <select id="input9" name="input9" required>
+                    <option value="">Select Option</option>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input10">ST Depression</label>
+                <input type="number" id="input10" name="input10" step="0.1" min="0" max="10" required>
+            </div>
+
+            <div class="form-group">
+                <label for="input11">Slope of Peak Exercise ST Segment</label>
+                <select id="input11" name="input11" required>
+                    <option value="">Select Slope</option>
+                    <option value="0">Upsloping</option>
+                    <option value="1">Flat</option>
+                    <option value="2">Downsloping</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input12">Number of Major Vessels (0-3)</label>
+                <input type="number" id="input12" name="input12" min="0" max="3" required>
+            </div>
+
+            <div class="form-group">
+                <label for="input13">Thal</label>
+                <select id="input13" name="input13" required>
+                    <option value="">Select Thal Status</option>
+                    <option value="0">Normal</option>
+                    <option value="1">Fixed Defect</option>
+                    <option value="2">Reversible Defect</option>
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn">Predict Heart Disease Risk</button>
+        </form>
+
+        {% if prediction is not none %}
+        <div class="prediction-result {% if prediction[0] == 1 %}prediction-positive{% else %}prediction-negative{% endif %}">
+            {% if prediction[0] == 1 %}
+                High Risk of Heart Disease
+            {% else %}
+                Low Risk of Heart Disease
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(event) {
+            const inputs = this.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (!input.value) {
+                    event.preventDefault();
+                    input.style.borderColor = 'red';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
