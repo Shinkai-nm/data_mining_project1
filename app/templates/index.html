@@ -64,15 +64,25 @@
             background-color: #ddffdd;
             color: #008000;
         }
+        .error-message {
+            color: red;
+            font-size: 12px;
+        }
+        .hint {
+            font-size: 0.9em;
+            color: grey;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Heart Disease Prediction</h1>
-        <form id="predictionForm" action="{{ url_for('main.prediction') }}" method="POST">
+        <form id="predictionForm">
             <div class="form-group">
                 <label for="input1">Age (years)</label>
                 <input type="number" id="input1" name="input1" min="18" max="100" required>
+                <span class="hint">Valid range: 18 to 100 years</span>
+                <div id="error-input1" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -82,6 +92,7 @@
                     <option value="0">Female</option>
                     <option value="1">Male</option>
                 </select>
+                <div id="error-input2" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -93,16 +104,21 @@
                     <option value="2">Non-Anginal Pain</option>
                     <option value="3">Asymptomatic</option>
                 </select>
+                <div id="error-input3" class="error-message"></div>
             </div>
 
             <div class="form-group">
                 <label for="input4">Resting Blood Pressure (mm Hg)</label>
                 <input type="number" id="input4" name="input4" min="50" max="250" required>
+                <span class="hint">Valid range: 50 to 250 mm Hg</span>
+                <div id="error-input4" class="error-message"></div>
             </div>
 
             <div class="form-group">
                 <label for="input5">Cholesterol (mg/dL)</label>
                 <input type="number" id="input5" name="input5" min="100" max="600" required>
+                <span class="hint">Valid range: 100 to 600 mg/dL</span>
+                <div id="error-input5" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -112,6 +128,7 @@
                     <option value="0">No</option>
                     <option value="1">Yes</option>
                 </select>
+                <div id="error-input6" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -122,11 +139,14 @@
                     <option value="1">ST-T Wave Abnormality</option>
                     <option value="2">Left Ventricular Hypertrophy</option>
                 </select>
+                <div id="error-input7" class="error-message"></div>
             </div>
 
             <div class="form-group">
                 <label for="input8">Max Heart Rate Achieved</label>
                 <input type="number" id="input8" name="input8" min="60" max="220" required>
+                <span class="hint">Valid range: 60 to 220 bpm</span>
+                <div id="error-input8" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -136,11 +156,14 @@
                     <option value="0">No</option>
                     <option value="1">Yes</option>
                 </select>
+                <div id="error-input9" class="error-message"></div>
             </div>
 
             <div class="form-group">
                 <label for="input10">ST Depression</label>
                 <input type="number" id="input10" name="input10" step="0.1" min="0" max="10" required>
+                <span class="hint">Valid range: 0 to 10</span>
+                <div id="error-input10" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -151,11 +174,14 @@
                     <option value="1">Flat</option>
                     <option value="2">Downsloping</option>
                 </select>
+                <div id="error-input11" class="error-message"></div>
             </div>
 
             <div class="form-group">
                 <label for="input12">Number of Major Vessels (0-3)</label>
                 <input type="number" id="input12" name="input12" min="0" max="3" required>
+                <span class="hint">Valid range: 0 to 3</span>
+                <div id="error-input12" class="error-message"></div>
             </div>
 
             <div class="form-group">
@@ -166,32 +192,97 @@
                     <option value="1">Fixed Defect</option>
                     <option value="2">Reversible Defect</option>
                 </select>
+                <div id="error-input13" class="error-message"></div>
             </div>
 
             <button type="submit" class="submit-btn">Predict Heart Disease Risk</button>
         </form>
 
-        {% if prediction is not none %}
-        <div class="prediction-result {% if prediction[0] == 1 %}prediction-positive{% else %}prediction-negative{% endif %}">
-            {% if prediction[0] == 1 %}
-                High Risk of Heart Disease
-            {% else %}
-                Low Risk of Heart Disease
-            {% endif %}
-        </div>
-        {% endif %}
+        <div id="prediction-result" class="prediction-result"></div>
     </div>
 
     <script>
         document.getElementById('predictionForm').addEventListener('submit', function(event) {
-            const inputs = this.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                if (!input.value) {
-                    event.preventDefault();
-                    input.style.borderColor = 'red';
+        event.preventDefault();
+        
+        const formData = {};
+        const inputs = this.querySelectorAll('input, select');
+        let isValid = true;
+
+        // Validate inputs and prepare data
+        inputs.forEach(input => {
+            const errorMessage = document.getElementById(`error-${input.id}`);
+            errorMessage.textContent = ''; // Reset error message
+
+            // Check if value is filled and within range
+            if (!input.value) {
+                isValid = false;
+                errorMessage.textContent = 'This field is required.';
+                input.style.borderColor = 'red';
+            } else {
+                // Validate numerical ranges
+                if (input.type === 'number') {
+                    if (input.min && parseFloat(input.value) < parseFloat(input.min)) {
+                        isValid = false;
+                        errorMessage.textContent = `Value should be at least ${input.min}.`;
+                        input.style.borderColor = 'red';
+                    } else if (input.max && parseFloat(input.value) > parseFloat(input.max)) {
+                        isValid = false;
+                        errorMessage.textContent = `Value should be at most ${input.max}.`;
+                        input.style.borderColor = 'red';
+                    } else {
+                        input.style.borderColor = '#ddd'; // Reset border color
+                    }
                 }
-            });
+            }
+
+            // Add valid input values to formData object
+            if (input.value && !errorMessage.textContent) {
+                formData[input.name] = input.value;
+            }
         });
+
+        // Only proceed to Flask prediction if all inputs are valid
+        if (isValid) {
+            // Prepare data for sending to Flask with short variable names matching the model
+            const modelInputData = {
+                age: formData.input1,
+                sex: formData.input2,
+                cp: formData.input3,
+                trestbps: formData.input4,
+                chol: formData.input5,
+                fbs: formData.input6,
+                restecg: formData.input7,
+                thalach: formData.input8,
+                exang: formData.input9,
+                oldpeak: formData.input10,
+                slope: formData.input11,
+                ca: formData.input12,
+                thal: formData.input13
+            };
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(modelInputData)  // Send data with short variable names
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('prediction-result');
+                if (data.prediction === 1) {
+                    resultDiv.textContent = 'High Risk of Heart Disease';
+                    resultDiv.className = 'prediction-result prediction-positive';
+                } else {
+                    resultDiv.textContent = 'Low Risk of Heart Disease';
+                    resultDiv.className = 'prediction-result prediction-negative';
+                }
+            })
+            .catch(error => console.error('Error during prediction:', error));
+        }
+    });
+
     </script>
 </body>
 </html>
