@@ -1,29 +1,103 @@
-openapi: "3.0.0"
+openapi: 3.0.0
 info:
-  title: "Flask Prediction API"
-  version: "1.0.0"
+  title: Heart Disease Prediction API
+  description: API for predicting heart disease risk based on input data.
+  version: 1.0.0
 paths:
   /predict:
     post:
-      summary: "Predict based on input variables"
+      summary: Predict heart disease risk
+      description: Receives input data and predicts heart disease risk using a machine learning model.
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                {% for i in range(1, 14) %}
-                input{{i}}:
+                age:
+                  type: integer
+                  description: Age of the patient
+                  example: 55
+                sex:
+                  type: integer
+                  description: Sex of the patient (0 = female, 1 = male)
+                  example: 1
+                cp:
+                  type: integer
+                  description: Chest pain type (0 = Typical Angina, 1 = Atypical Angina, 2 = Non-Anginal Pain, 3 = Asymptomatic)
+                  example: 1
+                trestbps:
+                  type: integer
+                  description: Resting blood pressure (in mm Hg)
+                  example: 120
+                chol:
+                  type: integer
+                  description: Serum cholesterol level (in mg/dL)
+                  example: 240
+                fbs:
+                  type: integer
+                  description: Fasting blood sugar > 120 mg/dL (1 = true, 0 = false)
+                  example: 0
+                restecg:
+                  type: integer
+                  description: Resting electrocardiographic results (0 = Normal, 1 = ST-T wave abnormality, 2 = Left ventricular hypertrophy)
+                  example: 0
+                thalach:
+                  type: integer
+                  description: Maximum heart rate achieved
+                  example: 150
+                exang:
+                  type: integer
+                  description: Exercise-induced angina (1 = yes, 0 = no)
+                  example: 0
+                oldpeak:
                   type: number
-                {% endfor %}
+                  format: float
+                  description: ST depression induced by exercise relative to rest
+                  example: 1.0
+                slope:
+                  type: integer
+                  description: Slope of peak exercise ST segment (0 = Upsloping, 1 = Flat, 2 = Downsloping)
+                  example: 1
+                ca:
+                  type: integer
+                  description: Number of major vessels (0-3)
+                  example: 0
+                thal:
+                  type: integer
+                  description: Thalassemia status (0 = Normal, 1 = Fixed Defect, 2 = Reversible Defect)
+                  example: 1
       responses:
-        "200":
-          description: "Prediction result"
+        '200':
+          description: Successful prediction
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   prediction:
-                    type: number
+                    type: integer
+                    description: Prediction result (0 = No heart disease, 1 = Risk of heart disease)
+                    example: 1
+        '400':
+          description: Bad request (validation errors)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message for invalid input
+                    example: "Invalid input data."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message for internal server issues
+                    example: "Internal server error."
